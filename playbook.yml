@@ -1,40 +1,29 @@
 - hosts: webservers
 
   tasks:
-    - name: update cache
+    - name: install nginx
       ansible.builtin.apt:
-        update_cache: yes
+        name: nginx
+        state: latest
       become: yes
 
-    - name: install git
-      ansible.builtin.apt:
-        name: git
-        state: present
-        update_cache: yes
+    - name: update index.html
+      ansible.builtin.copy:
+        src: files/index.html
+        dest: /usr/share/nginx/html/index.html
       become: yes
 
-    - name: install make
-      ansible.builtin.apt:
-        name: make
-        state: present
-        update_cache: yes
+    - name: update nginx config
+      ansible.builtin.copy:
+        src: files/nginx.conf
+        dest: /etc/nginx/nginx.conf
+      notify:
+        - restart nginx
       become: yes
 
-    - name: install nodejs
-      ansible.builtin.apt:
-        name: nodejs
-        state: present
-        update_cache: yes
+  handlers:
+    - name: restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
       become: yes
-
-    - name: add user
-      ansible.builtin.user:
-        name: arya
-      become: yes
-      tags: users
-
-    - name: add user
-      ansible.builtin.user:
-        name: sansa
-      become: yes
-      tags: users

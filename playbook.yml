@@ -1,31 +1,34 @@
-- hosts: all
+- hosts: webservers
+  gather_facts: no
   vars:
-    nginx_port: 80
-    root_dir: /usr/share/nginx/html
+    users:
+      - "jaime"
+      - "sansa"
+      - "robert"
   tasks:
-    - name: install nginx
+    - name: install git
       ansible.builtin.apt:
-        name: nginx
+        name: git
         state: latest
       become: yes
 
-    - name: update index.html
+    - name: add test users
+      ansible.builtin.user:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ users }}"
+      become: yes
+
+    - name: update .gitconfig
       ansible.builtin.template:
-        src: templates/index.html.j2
-        dest: "{{ root_dir }}/index.html"
+        src: templates/.gitconfig.j2
+        dest: "/home/{{item}}/.gitconfig"
+      loop: "{{ users }}"
       become: yes
 
-    - name: update nginx config
+    - name: update authorized_keys
       ansible.builtin.copy:
-        src: files/nginx.conf
-        dest: /etc/nginx/nginx.conf
-      notify:
-        - restart nginx
-      become: yes
-
-  handlers:
-    - name: restart nginx
-      ansible.builtin.service:
-        name: nginx
-        state: reloaded
+        src: files/id_rsa.pub
+        dest: "/home/{{item}}/.ssh/authorized_keys"
+      loop: "{{ users }}"
       become: yes

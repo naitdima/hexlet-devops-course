@@ -1,4 +1,4 @@
-- hosts: webservers
+- hosts: all
   vars:
     nginx_port: 80
     root_dir: /usr/share/nginx/html
@@ -10,7 +10,7 @@
       become: yes
 
     - name: update index.html
-      ansible.builtin.copy:
+      ansible.builtin.template:
         src: files/index.html
         dest: "{{ root_dir }}/index.html"
       become: yes
